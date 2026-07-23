@@ -25,7 +25,7 @@ app.post('/api/recommend', async (req, res) => {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     // Используем стандартную модель Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `Ты — профессиональный тревел-эксперт. 
 Пользователь ищет направление:
