@@ -12,7 +12,7 @@ app.use(express.static('.')); // отдаем index.html и статику из 
 app.post('/api/recommend', async (req, res) => {
   const { city, month, budget, vibe } = req.body;
 
- if (!city  !month  !budget || !vibe) {
+ if (!city || !month || !budget || !vibe) {
     return res.status(400).json({ error: 'Заполни все поля!' });
   }
 
