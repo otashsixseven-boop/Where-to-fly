@@ -1,0 +1,59 @@
+<div id="result" class="hidden glass p-6 rounded-2xl space-y-4 shadow-xl">
+      <h2 class="text-lg font-bold text-slate-200 border-b border-slate-700 pb-2 flex items-center gap-2">
+        <i class="fa-solid fa-map-location-dot text-sky-400"></i> Рекомендации турагента
+      </h2>
+      <div id="resultText" class="text-slate-300 text-sm leading-relaxed whitespace-pre-line space-y-2"></div>
+    </div>
+  </main>
+
+  <footer class="text-center py-4 text-xs text-slate-500">
+    WhereToFly AI &copy; 2026
+  </footer>
+
+  <script>
+    async function findDestinations() {
+      const city = document.getElementById('cityInput').value.trim();
+      const month = document.getElementById('monthInput').value.trim();
+      const budget = document.getElementById('budgetInput').value;
+      const vibe = document.getElementById('vibeInput').value.trim();
+
+      if (!city  !month  !vibe) {
+        alert("Пожалуйста, заполни все поля!");
+        return;
+      }
+
+      const btn = document.getElementById('searchBtn');
+      const loader = document.getElementById('loader');
+      const resultDiv = document.getElementById('result');
+      const resultText = document.getElementById('resultText');
+
+      btn.disabled = true;
+      loader.classList.remove('hidden');
+      resultDiv.classList.add('hidden');
+
+      try {
+        const response = await fetch('/api/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, month, budget, vibe })
+        });
+
+        const data = await response.json();
+
+        if (data.text) {
+          resultText.innerText = data.text;
+          resultDiv.classList.remove('hidden');
+        } else {
+          alert("Ошибка: " + (data.error || "Не удалось получить ответ"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Произошла ошибка сети.");
+      } finally {
+        btn.disabled = false;
+        loader.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
