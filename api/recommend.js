@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,13 +18,8 @@ app.post('/api/recommend', async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.error('Ключ GEMINI_API_KEY не найден в Environment Variables!');
-      return res.status(500).json({ error: 'API ключ не настроен на сервере' });
+      return res.status(500).json({ error: 'API ключ не настроен в Environment Variables' });
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    // Используем стандартную модель Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const prompt = `Ты — профессиональный тревел-эксперт. 
 Пользователь ищет направление:
@@ -36,14 +30,38 @@ app.post('/api/recommend', async (req, res) => {
 
 Предложи топ-3 направления с подробностями (погода, бюджет, что посмотреть). Ответ на русском языке.`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Прямой REST-запрос к официальному API Google Gemini
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Google API Error:', data);
+      return res.status(response.status).json({ 
+        error: `Ошибка Google API (${response.status}): ${data.error?.message || 'Неизвестный сбой'}` 
+      });
+    }
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Не удалось получить текст ответа';
     return res.json({ text });
+
   } catch (error) {
-    console.error('ОШИБКА GEMINI:', error);
-    return res.status(500).json({ error: `Ошибка ИИ: ${error.message || 'Неизвестный сбой'}` });
+    console.error('Ошибка сервера:', error);
+    return res.status(500).json({ error: `Ошибка сервера: ${error.message}` });
   }
 });
 
