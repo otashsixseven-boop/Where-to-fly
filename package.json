@@ -2,7 +2,13 @@
   "name": "where-to-fly",
   "version": "1.0.0",
   "type": "module",
+  "main": "api/recommend.js",
+  "scripts": {
+    "start": "node api/recommend.js"
+  },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0"
+    "@google/generative-ai": "^0.21.0",
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
   }
 }
