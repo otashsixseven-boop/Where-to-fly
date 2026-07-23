@@ -1,59 +1,73 @@
-<div id="result" class="hidden glass p-6 rounded-2xl space-y-4 shadow-xl">
-      <h2 class="text-lg font-bold text-slate-200 border-b border-slate-700 pb-2 flex items-center gap-2">
-        <i class="fa-solid fa-map-location-dot text-sky-400"></i> Рекомендации турагента
-      </h2>
-      <div id="resultText" class="text-slate-300 text-sm leading-relaxed whitespace-pre-line space-y-2"></div>
-    </div>
-  </main>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where to Fly</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+    input, select, button { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
+    button { background-color: #0070f3; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #0051a2; }
+    #result { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 15px; border-radius: 5px; }
+  </style>
+</head>
+<body>
 
-  <footer class="text-center py-4 text-xs text-slate-500">
-    WhereToFly AI &copy; 2026
-  </footer>
+  <h1>Куда полететь?</h1>
+  <p>Заполни параметры, и ИИ подберет тебе идеальные варианты.</p>
+
+  <form id="travelForm">
+    <label>Город вылета:</label>
+    <input type="text" id="city" placeholder="Например: Москва" required>
+
+    <label>Месяц:</label>
+    <input type="text" id="month" placeholder="Например: Июль" required>
+
+    <label>Бюджет:</label>
+    <input type="text" id="budget" placeholder="Например: 100 000 руб" required>
+
+    <label>Вайб / Пожелания:</label>
+    <input type="text" id="vibe" placeholder="Например: Море, тусовки или горы" required>
+
+    <button type="submit">Получить рекомендации</button>
+  </form>
+
+  <div id="result"></div>
 
   <script>
-    async function findDestinations() {
-      const city = document.getElementById('cityInput').value.trim();
-      const month = document.getElementById('monthInput').value.trim();
-      const budget = document.getElementById('budgetInput').value;
-      const vibe = document.getElementById('vibeInput').value.trim();
+    const form = document.getElementById('travelForm');
+    const resultDiv = document.getElementById('result');
 
-      if (!city  !month  !vibe) {
-        alert("Пожалуйста, заполни все поля!");
-        return;
-      }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      resultDiv.innerText = 'Думаем и подбираем направления...';
 
-      const btn = document.getElementById('searchBtn');
-      const loader = document.getElementById('loader');
-      const resultDiv = document.getElementById('result');
-      const resultText = document.getElementById('resultText');
-
-      btn.disabled = true;
-      loader.classList.remove('hidden');
-      resultDiv.classList.add('hidden');
+      const data = {
+        city: document.getElementById('city').value,
+        month: document.getElementById('month').value,
+        budget: document.getElementById('budget').value,
+        vibe: document.getElementById('vibe').value
+      };
 
       try {
-        const response = await fetch('/api/recommend', {
+        const res = await fetch('/api/recommend', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ city, month, budget, vibe })
+          body: JSON.stringify(data)
         });
 
-        const data = await response.json();
+        const json = await res.json();
 
-        if (data.text) {
-          resultText.innerText = data.text;
-          resultDiv.classList.remove('hidden');
+        if (res.ok) {
+          resultDiv.innerText = json.text;
         } else {
-          alert("Ошибка: " + (data.error || "Не удалось получить ответ"));
+          resultDiv.innerText = 'Ошибка: ' + (json.error || 'Что-то пошло не так');
         }
       } catch (err) {
-        console.error(err);
-        alert("Произошла ошибка сети.");
-      } finally {
-        btn.disabled = false;
-        loader.classList.add('hidden');
+        resultDiv.innerText = 'Ошибка соединения с сервером';
       }
-    }
+    });
   </script>
 </body>
 </html>
