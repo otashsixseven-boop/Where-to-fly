@@ -17,7 +17,14 @@ app.post('/api/recommend', async (req, res) => {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('Ключ GEMINI_API_KEY не найден в Environment Variables!');
+      return res.status(500).json({ error: 'API ключ не настроен на сервере' });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    // Используем стандартную модель Gemini
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `Ты — профессиональный тревел-эксперт. 
@@ -35,8 +42,8 @@ app.post('/api/recommend', async (req, res) => {
 
     return res.json({ text });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Ошибка сервера при запросе к ИИ' });
+    console.error('ОШИБКА GEMINI:', error);
+    return res.status(500).json({ error: `Ошибка ИИ: ${error.message || 'Неизвестный сбой'}` });
   }
 });
 
